@@ -16,6 +16,7 @@ import gensim.corpora as corpora
 from gensim.utils import simple_preprocess
 from gensim.models import CoherenceModel
 def extract_wild_text(file:str)->pd:
+    ###this function extract all data out and made them into a dataframe for future use.
     frame = []
     #wild_text = []
     #time = []
@@ -34,6 +35,7 @@ def extract_wild_text(file:str)->pd:
     return df
 def clean_text(wild_text:list)->dict:
     #returns all cleaned text with only text, and how many times they appear.
+    #also clean the stopwordss, but this one only makes for word count etc. not for future use.
     moviedict = defaultdict(lambda: 0)
     for tweet in wild_text.content:
         if 'RT' in tweet:# "but I love it  RT@SASX THIS move is bad" ->>"but I love it"
@@ -47,6 +49,7 @@ def clean_text(wild_text:list)->dict:
         #moviedict[emoji.demojize(item[1])] +=1 #use emoji library to turn emoji into text, so that we could analyze it.
     return moviedict
 def cleaninto_df(frame:pd) -> pd:
+    #this one cleans the data, stop words and return words into root word by lemmatizer, and make a new column for the data frame.
     stop = stopwords.words('english')
     newStopWords = ['get', 'http','there','and','i','t','it','d']
     stop.extend(newStopWords)
@@ -80,6 +83,7 @@ def cleaninto_df(frame:pd) -> pd:
     frame['Cleaned'] = new_col
     return frame
 def sentiment(frame:pd) -> pd:
+    #analyze all the sentiment for each sentence.
     Sentiment_polarity = []
     Sentiment_subjectivity = []
     frame['Sentiment_polarity','Sentiment_subjectivity'] = None
@@ -95,6 +99,7 @@ def sentiment(frame:pd) -> pd:
 
 
 def total__avg_polarity(frame:pd)->float:
+    # these 2 function give the general sentiment for each file/each movie, so do not add it into the dataframe.
     return frame.Sentiment_polarity.sum()/frame.shape[0]
 def total__avg_subjectivity(frame:pd)->float:
     return frame.Sentiment_subjectivity.sum()/frame.shape[0]
@@ -114,6 +119,7 @@ if __name__ == "__main__":
     #polar = total__avg_polarity(total_sentiment)
     #sub = total__avg_subjectivity(total_sentiment)
     #print(total_sentiment.head)
+    ### after get all info into the data frame, we save it into the csv for future use.#####
     total_sentiment.to_csv("#DoctorSleep_cleaned.csv")  ################# change this file name to XXX_leaned.csv############
                                              ################# change this file name to XXX_leaned.csv############
     print('done')
