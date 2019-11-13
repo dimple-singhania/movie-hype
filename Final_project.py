@@ -20,9 +20,7 @@ for i in api.user_timeline(screen_name = 'realDonaldTrump',since = '2019-10-25',
 """
 rows = ['date','content']
 with open('#MidwayMovie.csv','a') as f: #change the file name as movies name
-    # the movies we have are: 1. Maleficent: Mistress of Evil
-    #2.Terminator: Dark Fate   #3.Doctor Sleep 4. midway 5. Last Christmas 6.Jojo rabbit 8.honey boy
-    #9. danger close 9. racetime(La course des tuques 10. love is blind)
+    ### I made a mistake here for some moive names, some whith a extra space at the begining, some not.###
 
     c = csv.writer(f, delimiter=',', lineterminator='\n')
     c.writerow(rows)                        ##### pay attern about the space before #, I think I made mistake on this.
