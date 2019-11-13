@@ -1,4 +1,5 @@
-
+###  this model is mainly for LAD model(topic model) it's ok that you don't understand all the functions and parameters
+### I don't understand some of the as well.
 from textblob import TextBlob
 from nltk.corpus import stopwords
 from textblob import TextBlob
@@ -11,6 +12,8 @@ import pandas as pd
 import lda
 def dic_cor(frame1:pd,frame2:pd)->None:
     #create dictionary and corpus
+    # also added the bigram and trigram into the dict and coprus, since French revolution could have many meaning, but we only
+    #want the two appears most frequently.
     integrate = []
     move1 = []
     move2 = []
@@ -37,6 +40,10 @@ def dic_cor(frame1:pd,frame2:pd)->None:
     return id2word,corpus
 def LDA_model(id2word:pd,corpus:pd)->list:
     # this function build the model and train it
+    # the model is good now. but there is a problem
+    #### FOR EACH MODEL, THE PARAMETER IS DIFFERENT, AND DIFFERENT NUMBER COULD GIVE YOU DIFFERENT MODEL RESULT
+    # I'm still trying to figure out which number would fit our model well.
+    ## if you don't understand each parameter, go gensim's website for check.
     lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                 id2word=id2word,
                                                 num_topics=5,
@@ -62,6 +69,8 @@ def LDA_model(id2word:pd,corpus:pd)->list:
     """
 def document_topic(movie_list:list)->pd:
     # by having the result from the model, we could see a specific movie's topic here.
+    ### I know there's a bug for printing, it did't give you the which doc it is printing, I tried to add the list 
+    ### and run for loop, but it will give me the datafram but not 'Mal_Cleaned'. if you have any idea, go ahead teach me. hahah
     for movie in movie_list:
         integrate = []
         for tweet in movie:
