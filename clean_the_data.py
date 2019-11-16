@@ -1,62 +1,45 @@
-from collections import defaultdict
-import tweepy
-import twitter
-import json
-import tweepy
 import csv
 import re
 import pandas as pd
 import emoji
-from textblob import TextBlob
 from nltk.corpus import stopwords
 from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
-import gensim
-import gensim.corpora as corpora
-from gensim.utils import simple_preprocess
-from gensim.models import CoherenceModel
+from nltk.tokenize import word_tokenize
+
+
 def extract_wild_text(file:str)->pd:
-    ###this function extract all data out and made them into a dataframe for future use.
     frame = []
-    #wild_text = []
-    #time = []
-    csvFile = open(file,'r')
+    csvFile = open(file, 'r')
     reader = csv.reader(csvFile)
     for item in reader:
         if reader.line_num == 1:
             pass
         else:
             time = (item[0])
-            wild_text = (emoji.demojize(item[1]))#over here, I turn emoji into text, but we can also delete emoji
+            wild_text = (emoji.demojize(item[1]))   # over here, I turn emoji into text, but we can also delete emoji
                                                     # becasue I think emoji may have emotions too,
-                                                    #so I transfer them into text see if there any result.
-            frame.append([time,wild_text])
-    df = pd.DataFrame(frame,columns=['time','content'])
+                                                    # so I transfer them into text see if there any result.
+            frame.append([time, wild_text])
+    df = pd.DataFrame(frame, columns=['time', 'content'])
     return df
-def clean_text(wild_text:list)->dict:
-    #returns all cleaned text with only text, and how many times they appear.
-    #also clean the stopwordss, but this one only makes for word count etc. not for future use.
-    moviedict = defaultdict(lambda: 0)
-    for tweet in wild_text.content:
-        if 'RT' in tweet:# "but I love it  RT@SASX THIS move is bad" ->>"but I love it"
-                                #"RT@SASX THIS move is bad  -->> RT@SASX THIS move is bad"
-            if tweet.index('RT') > 5:
-                tweet = tweet[:tweet.index('RT')]
-            else:
-                tweet = tweet[2:]
-        tweet = ' '.join(re.sub("(@\w+)|([^A-Za-z]+)|(\w+:\/\/\S+)", " ", tweet).split())
-        moviedict[tweet]+=1
-        #moviedict[emoji.demojize(item[1])] +=1 #use emoji library to turn emoji into text, so that we could analyze it.
-    return moviedict
+
+
 def cleaninto_df(frame:pd) -> pd:
-    #this one cleans the data, stop words and return words into root word by lemmatizer, and make a new column for the data frame.
+    """
+    this function cleans the data by REGX and store into a df.
+    :param frame:
+    :return:
+    """
+    # remove repeated characters EXAMPLE: DIMPLLLLEEEEE -> DIMPLE
+    # nopunc = word_tokenize(nopunc) this might not work. find something else
+
     stop = stopwords.words('english')
     newStopWords = ['get', 'http','there','and','i','t','it','d']
     stop.extend(newStopWords)
     lemmatizer = WordNetLemmatizer()
-    # this function cleans the data by REGX and store into a df.
     clean = []
-    new_col=[]
+    new_col = []
     frame['Cleaned'] = None
     for tweet in frame.content:
         if 'RT' in tweet:
@@ -64,62 +47,52 @@ def cleaninto_df(frame:pd) -> pd:
                 tweet = tweet[:tweet.index('RT')]
             else:
                 tweet = tweet[2:]
+        # WHAT ARE WE TRYING TO CLEAN HERE?
+        # cleaning with preprocessor library https://pypi.org/project/tweet-preprocessor/
         tweet = ' '.join(re.sub("(@\w+)|([^A-Za-z]+)|(\w+:\/\/\S+)", " ", tweet).split())
+        # changes  #November1 -> November: need to remove full hashtag?
+        # changes  @poetweatherford: -> poetweatherford
+        # changes  don’t -> don t, children's -> children s
+        print("after regex:" + str(tweet))
         clean.append(tweet.lower())
     for clean_tweet in clean:
-        tokens = clean_tweet.split()
-        clean_tokens = []
-        for token in tokens:
-            if token not in stop:
-                clean_tokens.append(token)
+        word_tokens = word_tokenize(clean_tweet)
+        clean_tokens = [word for word in word_tokens if word not in stop]
         stems = []
         for item in clean_tokens:
             stems.append(lemmatizer.lemmatize(item))
-        newword = ''
-        for item in stems:
-            newword += item + ' '  # if not + '', it will become: ILOVEYOUANDYOUDONTLOVEME. but should be: I LOVE YOU AND YOU DONT LOVE ME
-            # print(newword)
-        new_col.append(newword.lower())
+        new_sentence = ' '.join(stems)
+        new_col.append(new_sentence.lower())
     frame['Cleaned'] = new_col
     return frame
+
+
 def sentiment(frame:pd) -> pd:
-    #analyze all the sentiment for each sentence.
     Sentiment_polarity = []
     Sentiment_subjectivity = []
-    frame['Sentiment_polarity','Sentiment_subjectivity'] = None
     for tweet in frame.Cleaned:
         blob = TextBlob(tweet)
         Sentiment_polarity.append(blob.sentiment.polarity)
         Sentiment_subjectivity.append(blob.sentiment.subjectivity)
-    #print(len(Sentiment_polarity))
     frame['Sentiment_polarity'] = Sentiment_polarity
     frame['Sentiment_subjectivity'] = Sentiment_subjectivity
     return frame
-#def write_file(frame:pd)->None:
 
 
-def total__avg_polarity(frame:pd)->float:
-    # these 2 function give the general sentiment for each file/each movie, so do not add it into the dataframe.
+def total__avg_polarity(frame:pd) -> float:
     return frame.Sentiment_polarity.sum()/frame.shape[0]
-def total__avg_subjectivity(frame:pd)->float:
+
+
+def total__avg_subjectivity(frame:pd) -> float:
     return frame.Sentiment_subjectivity.sum()/frame.shape[0]
 
 
-
-
 if __name__ == "__main__":
-    ##feel free to call any functions you like and remeeber tochange the csv file name.
-    tweets = extract_wild_text('#DoctorSleep.csv')###### input your datafile name    ########
-                                                #######      #######
-    #print(tweets)
-    #clean = clean_text(tweets)
+    # CHANGE THE INPUT CSV FILE HERE
+    tweets = extract_wild_text('Harriet.csv')
     clean = cleaninto_df(tweets)
-    #print(cleaninto_df(tweets))
     total_sentiment = sentiment(clean)
-    #polar = total__avg_polarity(total_sentiment)
-    #sub = total__avg_subjectivity(total_sentiment)
-    #print(total_sentiment.head)
-    ### after get all info into the data frame, we save it into the csv for future use.#####
-    total_sentiment.to_csv("#DoctorSleep_cleaned.csv")  ################# change this file name to XXX_leaned.csv############
-                                             ################# change this file name to XXX_leaned.csv############
-    print('done')
+
+    # WRITE THE NAME OF OUTPUT FILE HERE. MAKE IT F=DIFFERENT THAN THE INPUT FILE
+    total_sentiment.to_csv("Harriet_test_cleaned_3.csv", index=False)
+    print('DONE')
