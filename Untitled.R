@@ -1,3 +1,9 @@
+##### for this file, you need the sale data,date, and keyword index,date.       ###########
+#####    make sure they are in the same range.     ###########
+#####    don;t know how to do multi-xreg, still working on it.     ###########
+#####         ###########
+#####         ###########
+
 ## get search index############
 ### generated file.
 keywords=c("jolie")
