@@ -1,10 +1,10 @@
 import tweepy
 import csv
 
-api_key = 'OUSwoGVeEJ6uQR102LedFpR2m'  # your key and secret here
-api_secret_key = 'Hcm7e0cnhwL4jCzOAHVyF4yelFK1gLXM07Vm2sEHXTzxOm2vj3'
-access_token = '202517150-87R2gouYsiYoQVSPVqWglNnU6GGEVism77AQJx5F'
-access_token_secret = 'idDj2JFm7bIfup5eL1QKKnNiWdHZKkNqDC8CEEPQa2Rhn'
+api_key = '***********'  # your key and secret here
+api_secret_key = '***********'
+access_token = '***********'
+access_token_secret = '***********'
 
 auth = tweepy.OAuthHandler(api_key, api_secret_key)
 auth.set_access_token(access_token, access_token_secret)
